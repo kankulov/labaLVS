@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Схема ЛВС</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.css" />
+    <style>
+        body {
+            font-family: Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #1e1e2f;
+            color: #dcdcdc;
+            text-align: center;
+        }
+        h1 {
+            color: #ff6347;
+        }
+        h2 {
+            color: #0b9207;
+        }
+        #network {
+            width: 90%;
+            height: 500px;
+            margin: 20px auto;
+            border: 2px solid #444;
+            border-radius: 10px;
+        }
+        #controls {
+            margin: 20px auto;
+            background: #292a3e;
+            padding: 20px;
+            border-radius: 10px;
+            width: 80%;
+            color: #dcdcdc;
+        }
+        #controls select, button {
+            padding: 10px;
+            font-size: 1rem;
+            margin: 10px;
+            border: none;
+            border-radius: 5px;
+            background: #444;
+            color: #dcdcdc;
+        }
+        #controls button:hover {
+            background: #61617d;
+            cursor: pointer;
+        }
+        #instructions {
+            margin: 20px auto;
+            width: 80%;
+            background: #292a3e;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        #footer {
+            margin-top: 30px;
+            background: #1e1e2f;
+            padding: 20px;
+            border-top: 2px solid #444;
+        }
+/* Контейнер для архитектуры */
+.architecture-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 20px; /* Расстояние между колонками */
+        background-color: #1e1e1e; /* Цвет фона для контейнера */
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.3); /* Тень вокруг контейнера */
+    }
+
+    /* Фронтенд и бэкенд колонки */
+    .frontend, .backend {
+        flex: 1;
+        max-width: 45%;
+    }
+
+    /* Стили для списков внутри архитектуры */
+    .styled-list {
+        list-style-position: inside; /* Точки располагаются внутри текста */
+        background-color: #282828; /* Фон списка */
+        padding: 10px;
+        border-radius: 8px;
+        color: #ffffff;
+        margin: 10px 0; /* Добавлено расстояние сверху и снизу */
+    }
+
+    /* Заголовки и акценты */
+    .section h2 {
+        color: #ff6347; /* Заголовки внутри section */
+    }
+
+    .frontend strong, .backend strong {
+        color: #76ff7a; /* Цвет текста "Фронтенд" и "Бэкенд" */
+    }
+
+    /* Убираем влияние на другие элементы */
+    .section h2, .frontend strong, .backend strong {
+        margin-bottom: 10px;
+    }
+
+
+    </style>
+</head>
+<body>
+    <h1>Схема ЛВС</h1>
+    <div id="network"></div>
+    <div id="controls">
+        <h2>Пинг устройств</h2>
+        <label for="source">Источник:</label>
+        <select id="source">
+            <option value="Server">Server</option>
+            <option value="Switch_1">Switch 1</option>
+            <option value="Switch_2">Switch 2</option>
+            <option value="Printer_1">Printer 1</option>
+            <option value="Printer_2">Printer 2</option>
+            <option value="PC_1_1">PC 1.1</option>
+            <option value="PC_1_2">PC 1.2</option>
+            <option value="PC_1_3">PC 1.3</option>
+            <option value="PC_1_4">PC 1.4</option>
+            <option value="PC_1_5">PC 1.5</option>
+            <option value="PC_2_1">PC 2.1</option>
+            <option value="PC_2_2">PC 2.2</option>
+            <option value="PC_2_3">PC 2.3</option>
+            <option value="PC_2_4">PC 2.4</option>
+            <option value="PC_2_5">PC 2.5</option>
+        </select>
+        <label for="destination">Назначение:</label>
+        <select id="destination">
+            <option value="Server">Server</option>
+            <option value="Switch_1">Switch 1</option>
+            <option value="Switch_2">Switch 2</option>
+            <option value="Printer_1">Printer 1</option>
+            <option value="Printer_2">Printer 2</option>
+            <option value="PC_1_1">PC 1.1</option>
+            <option value="PC_1_2">PC 1.2</option>
+            <option value="PC_1_3">PC 1.3</option>
+            <option value="PC_1_4">PC 1.4</option>
+            <option value="PC_1_5">PC 1.5</option>
+            <option value="PC_2_1">PC 2.1</option>
+            <option value="PC_2_2">PC 2.2</option>
+            <option value="PC_2_3">PC 2.3</option>
+            <option value="PC_2_4">PC 2.4</option>
+            <option value="PC_2_5">PC 2.5</option>
+        </select>
+        <button onclick="ping()">Пропинговать</button>
+        <p id="pingResult"></p>
+    </div>
+    <div id="instructions">
+        <h2>Инструкция</h2>
+        <p>Данная ЛВС создана для выполнения следующих задач:</p>
+        <ul>
+            <li>Сетевое хранение файлов и печать.</li>
+            <li>Поддержка устаревших ПК в качестве терминальных клиентов.</li>
+            <li>Резервное копирование файлов и приложений.</li>
+        </ul>
+        <p>
+            Сеть была спроектирована  <b>Канкуловым Н.В.</b>, группа 6561-110501D.<br>
+            <b>Вариант работы:</b> 7.<br>
+            Работы выполнены вручную, так как NetWizard не функционировал.
+        </p>
+        <p>
+            Эта модель имитирует работу ЛВС, используется Python.
+        </p>
+    </div>
+    <div class="section">
+        <h2>Архитектура решения:</h2>
+        <div class="architecture-container">
+            <div class="frontend">
+                <strong>Фронтенд (HTML/JavaScript)</strong>:
+                <ul class="styled-list">
+                    <li>Отвечает за визуализацию сети.</li>
+                    <li>Предоставляет выпадающий список для выбора устройств.</li>
+                    <li>Передает запросы к серверу через AJAX для проверки соединений.</li>
+                </ul>
+            </div>
+            <div class="backend">
+                <strong>Бэкенд (Python/Flask)</strong>:
+                <ul class="styled-list">
+                    <li>Отвечает за логику симуляции, включая проверку соединений между устройствами.</li>
+                    <li>Сеть моделируется как граф с узлами (устройства) и ребрами (соединения).</li>
+                    <li>Реализован алгоритм поиска в ширину (BFS) для поиска пути между устройствами.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div id="footer">
+        <p>
+            Для полной эмуляции используется Python (Flask). Локально запускается скрипт, который обрабатывает запросы на пинг. 
+            Код Python доступен ниже:
+        </p>
+        <pre style="text-align:left; background:#292a3e; padding:10px; color:#dcdcdc;">
+from flask import Flask, request, jsonify
+
+app = Flask(__name__)
+
+network = {
+    "Server": ["Switch_1", "Switch_2"],
+    "Switch_1": ["Server", "Printer_1", "PC_1_1", "PC_1_2", "PC_1_3", "PC_1_4", "PC_1_5"],
+    "Switch_2": ["Server", "Printer_2", "PC_2_1", "PC_2_2", "PC_2_3", "PC_2_4", "PC_2_5"],
+}
+
+@app.route('/ping', methods=['POST'])
+def ping():
+    data = request.json
+    source = data.get("source")
+    destination = data.get("destination")
+
+    if source in network and destination in network[source]:
+        return jsonify({"result": f"Ping {source} -> {destination}: Success"})
+    else:
+        return jsonify({"result": f"Ping {source} -> {destination}: Failed"})
+
+if __name__ == "__main__":
+    app.run()
+        </pre>
+    </div>
+    <script>
+        const nodes = new vis.DataSet([
+            { id: "Server", label: "Server", group: "core" },
+            { id: "Switch_1", label: "Switch 1", group: "switch" },
+            { id: "Switch_2", label: "Switch 2", group: "switch" },
+            { id: "Printer_1", label: "Printer 1", group: "printer" },
+            { id: "Printer_2", label: "Printer 2", group: "printer" },
+            { id: "PC_1_1", label: "PC 1.1", group: "pc" },
+            { id: "PC_1_2", label: "PC 1.2", group: "pc" },
+            { id: "PC_1_3", label: "PC 1.3", group: "pc" },
+            { id: "PC_1_4", label: "PC 1.4", group: "pc" },
+            { id: "PC_1_5", label: "PC 1.5", group: "pc" },
+            { id: "PC_2_1", label: "PC 2.1", group: "pc" },
+            { id: "PC_2_2", label: "PC 2.2", group: "pc" },
+            { id: "PC_2_3", label: "PC 2.3", group: "pc" },
+            { id: "PC_2_4", label: "PC 2.4", group: "pc" },
+            { id: "PC_2_5", label: "PC 2.5", group: "pc" }
+        ]);
+
+        const edges = new vis.DataSet([
+            { from: "Server", to: "Switch_1" },
+            { from: "Server", to: "Switch_2" },
+            { from: "Switch_1", to: "Printer_1" },
+            { from: "Switch_2", to: "Printer_2" },
+            { from: "Switch_1", to: "PC_1_1" },
+            { from: "Switch_1", to: "PC_1_2" },
+            { from: "Switch_1", to: "PC_1_3" },
+            { from: "Switch_1", to: "PC_1_4" },
+            { from: "Switch_1", to: "PC_1_5" },
+            { from: "Switch_2", to: "PC_2_1" },
+            { from: "Switch_2", to: "PC_2_2" },
+            { from: "Switch_2", to: "PC_2_3" },
+            { from: "Switch_2", to: "PC_2_4" },
+            { from: "Switch_2", to: "PC_2_5" }
+        ]);
+
+        const options = {
+            groups: {
+                core: { color: { background: "#ff6347" } },
+                switch: { color: { background: "#1e90ff" } },
+                printer: { color: { background: "#32cd32" } },
+                pc: { color: { background: "#ffd700" } }
+            },
+            edges: {
+                color: "#dcdcdc",
+                arrows: "to"
+            }
+        };
+
+        const container = document.getElementById("network");
+        const data = { nodes, edges };
+        const network = new vis.Network(container, data, options);
+
+        function ping() {
+            const source = document.getElementById("source").value;
+            const destination = document.getElementById("destination").value;
+
+            const isConnected = edges
+                .get()
+                .some(edge =>
+                    (edge.from === source && edge.to === destination) ||
+                    (edge.to === source && edge.from === destination)
+                );
+
+            const result = isConnected
+                ? `Ping ${source} -> ${destination}: Success (Direct Connection)`
+                : `Ping ${source} -> ${destination}: Failed (No Direct Connection)`;
+
+            document.getElementById("pingResult").innerText = result;
+        }
+    </script>
+</body>
+</html>
